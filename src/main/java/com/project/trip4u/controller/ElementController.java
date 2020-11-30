@@ -1,6 +1,7 @@
 package com.project.trip4u.controller;
 
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +12,7 @@ import com.project.trip4u.boundary.ElementBoundary;
 
 
 @RestController
+@CrossOrigin(origins = "*")
 public class ElementController {
 	
 	
