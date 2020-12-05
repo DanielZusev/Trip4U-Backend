@@ -15,7 +15,6 @@ import com.project.trip4u.data.UserRole;
 import com.project.trip4u.service.UserService;
 
 
-
 @RestController
 @CrossOrigin(origins = "*")
 public class UserController {
@@ -33,7 +32,7 @@ public class UserController {
 			produces = MediaType.APPLICATION_JSON_VALUE,
 			consumes = MediaType.APPLICATION_JSON_VALUE)
 	
-	public UserBoundary newUser (@RequestBody NewUserBoundary newUserBoundary) {//TODO finish method && consider changing newUderBoundary to UserBoundary
+	public UserBoundary newUser (@RequestBody NewUserBoundary newUserBoundary) {
 		return userService.createUser(
 				new UserBoundary(
 						UserRole.valueOf(newUserBoundary.getRole()),
@@ -47,7 +46,7 @@ public class UserController {
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	
 	public UserBoundary retrieveUserDetails (@PathVariable("password") String password, @PathVariable("userEmail") String userEmail ) { //TODO check about password
-		 return userService.login(userEmail,password);
+		 return userService.login(userEmail, password);
 	}
 	
 	
@@ -55,8 +54,7 @@ public class UserController {
 			method = RequestMethod.PUT,
 			consumes = MediaType.APPLICATION_JSON_VALUE)
 	
-	public void updateUserDetails (@RequestBody UserBoundary userBoundary, @PathVariable("userEmail") String userEmail) {//TODO finish method
-
-		
+	public void updateUserDetails (@RequestBody UserBoundary userBoundary, @PathVariable("userEmail") String userEmail) {
+		userService.updateUser(userEmail, userBoundary);
 	}
 }
