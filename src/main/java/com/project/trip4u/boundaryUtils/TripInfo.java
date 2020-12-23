@@ -13,21 +13,24 @@ public class TripInfo {
 	private List<String> categories;
 	private String passengers;
 	private DayLoad dayLoad;
-	private String destination;
+	private String startLocation;
+	private String endLocation;
 	
 	public TripInfo() {
 
 	}
 
 	public TripInfo(String user, Date startDate, Date endDate, List<String> categories, String passengers,
-			DayLoad dayLoad, String destination) {
+			DayLoad dayLoad, String startLocation, String endLocation) {
+		super();
 		this.user = user;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.categories = categories;
 		this.passengers = passengers;
 		this.dayLoad = dayLoad;
-		this.destination = destination;
+		this.startLocation = startLocation;
+		this.endLocation = endLocation;
 	}
 
 	public String getUser() {
@@ -78,12 +81,22 @@ public class TripInfo {
 		this.dayLoad = dayLoad;
 	}
 
-	public String getDestination() {
-		return destination;
+	public String getStartLocation() {
+		return startLocation;
 	}
 
-	public void setDestination(String destination) {
-		this.destination = destination;
+	public void setStartLocation(String startLocation) {
+		this.startLocation = startLocation;
 	}
+
+	public String getEndLocation() {
+		return endLocation;
+	}
+
+	public void setEndLocation(String endLocation) {
+		this.endLocation = endLocation;
+	}
+
+	
 	
 }

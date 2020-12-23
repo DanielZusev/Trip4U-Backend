@@ -11,6 +11,7 @@ public class EventInfo {
 	private int score;
 	private String imageURL;
 	private AssociateTo association;
+	private boolean isVisited;
 	
 	public EventInfo() {
 
@@ -18,6 +19,7 @@ public class EventInfo {
 
 	public EventInfo(LocationEntity location, String description, String catagory, Price price, int score,
 			String imageURL, AssociateTo association) {
+		super();
 		this.location = location;
 		this.description = description;
 		this.catagory = catagory;
@@ -25,6 +27,7 @@ public class EventInfo {
 		this.score = score;
 		this.imageURL = imageURL;
 		this.association = association;
+		this.isVisited = false;
 	}
 
 	public LocationEntity getLocation() {
@@ -82,5 +85,15 @@ public class EventInfo {
 	public void setAssociation(AssociateTo association) {
 		this.association = association;
 	}
+
+	public boolean isVisited() {
+		return isVisited;
+	}
+
+	public void setVisited(boolean isVisited) {
+		this.isVisited = isVisited;
+	}
+
+	
 	
 }
