@@ -71,6 +71,7 @@ public class ClientActions {
 		
 		TripInfo trip = attributeConverter.toAttribute(action.getMoreDetails().get("trip"), TripInfo.class);
 		
+		
 //		String query = String.format(Consts.BASE_URL + "", args);
 		
 	}
