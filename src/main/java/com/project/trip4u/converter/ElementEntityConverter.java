@@ -13,6 +13,7 @@ public class ElementEntityConverter {
 
 		return new ElementBoundary(
 				elementEntity.getElementId(),
+				elementEntity.getUserId(),
 				elementEntity.getType(),
 				elementEntity.getName(),
 				elementEntity.getMoreDetails());	
@@ -23,6 +24,7 @@ public class ElementEntityConverter {
 		ElementEntity elementEntity = new ElementEntity();
 		
 		elementEntity.setElementId(elementBoundary.getElementId());
+		elementEntity.setUserId(elementBoundary.getUserId());
 		elementEntity.setType(elementBoundary.getType());
 		elementEntity.setName(elementBoundary.getName());
 		elementEntity.setMoreDetails(elementBoundary.getMoreDetails());

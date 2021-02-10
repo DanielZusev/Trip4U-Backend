@@ -11,6 +11,7 @@ public class ElementEntity {
 	
 	@Id
 	private String elementId;
+	private String userId;
 	private String type;
 	private String name;
 	private Map<String,Object> moreDetails;
@@ -20,9 +21,10 @@ public class ElementEntity {
 		
 	}
 
-	public ElementEntity(String elementId, String type, String name, Map<String, Object> moreDetails,
+	public ElementEntity(String elementId, String userId, String type, String name, Map<String, Object> moreDetails,
 			Set<ElementEntity> childElements) {
 		this.elementId = elementId;
+		this.userId = userId;
 		this.type = type;
 		this.name = name;
 		this.moreDetails = moreDetails;
@@ -35,6 +37,14 @@ public class ElementEntity {
 
 	public void setElementId(String elementId) {
 		this.elementId = elementId;
+	}
+	
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 
 	public String getType() {

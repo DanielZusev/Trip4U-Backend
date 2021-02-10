@@ -4,6 +4,7 @@ import java.util.Map;
 public class ElementBoundary {
 	
 	private String elementId;
+	private String userId;
 	private String type;
 	private String name;
 	private Map<String,Object> moreDetails; //trip date, trip created by, trip locations, event location
@@ -14,8 +15,9 @@ public class ElementBoundary {
 	}
 
 
-	public ElementBoundary(String elementId, String type, String name, Map<String, Object> moreDetails) {
+	public ElementBoundary(String elementId, String userId, String type, String name, Map<String, Object> moreDetails) {
 		this.elementId = elementId;
+		this.userId = userId;
 		this.type = type;
 		this.name = name;
 		this.moreDetails = moreDetails;
@@ -30,7 +32,15 @@ public class ElementBoundary {
 	public void setElementId(String elementId) {
 		this.elementId = elementId;
 	}
+	
+	public String getUserId() {
+		return userId;
+	}
 
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
 
 	public String getType() {
 		return type;
