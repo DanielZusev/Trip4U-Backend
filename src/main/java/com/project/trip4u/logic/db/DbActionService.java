@@ -1,5 +1,6 @@
 package com.project.trip4u.logic.db;
 
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -37,7 +38,7 @@ public class DbActionService implements ActionService{
 	}
 	
 	@Override
-	public Object invokeAction(ActionBoundary action) {
+	public Object invokeAction(ActionBoundary action) throws ParseException {
 		if( action.getInvokeBy() == null) 
 			throw new InternalServerException("InvokeBy must not be null");
 		

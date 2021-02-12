@@ -8,20 +8,20 @@ import com.project.trip4u.data.DayLoad;
 
 public class TripInfo {
 
-	private Date startDate;
-	private Date endDate;
+	private String startDate;
+	private String endDate;
 	private List<String> categories;
 	private String passengers;
 	private DayLoad dayLoad;
-	private String startLocation;
-	private String endLocation;
+	private String startLocation; //UI sends Coordinates
+	private String endLocation; //UI sends Coordinates
 	private ArrayList<EventInfo> route;
 	
 	public TripInfo() {
 
 	}
 
-	public TripInfo(Date startDate, Date endDate, List<String> categories, String passengers,
+	public TripInfo(String startDate, String endDate, List<String> categories, String passengers,
 			DayLoad dayLoad, String startLocation, String endLocation, ArrayList<EventInfo> route) {
 		
 		this.startDate = startDate;
@@ -35,19 +35,19 @@ public class TripInfo {
 	}
 
 
-	public Date getStartDate() {
+	public String getStartDate() {
 		return startDate;
 	}
 
-	public void setStartDate(Date startDate) {
+	public void setStartDate(String startDate) {
 		this.startDate = startDate;
 	}
 
-	public Date getEndDate() {
+	public String getEndDate() {
 		return endDate;
 	}
 
-	public void setEndDate(Date endDate) {
+	public void setEndDate(String endDate) {
 		this.endDate = endDate;
 	}
 

@@ -1,33 +1,44 @@
 package com.project.trip4u.boundaryUtils;
 
+import java.util.Map;
+
 import com.project.trip4u.entity.LocationEntity;
 
 public class EventInfo {
 	
+	private String eventName;
 	private LocationEntity location;
-	private String description;
-	private String catagory;
-	private Price price;
-	private int score;
+	private String intro;
+	private String snippet;
+	private String label;
+	private double score;
 	private String imageURL;
-	private AssociateTo association;
 	private boolean isVisited;
+	private Map<String,String> properties;
 	
 	public EventInfo() {
 
 	}
 
-	public EventInfo(LocationEntity location, String description, String catagory, Price price, int score,
-			String imageURL, AssociateTo association) {
-		super();
+	public EventInfo(String eventName, LocationEntity location, String intro, String snippet, String label,
+			double score, String imageURL, boolean isVisited, Map<String, String> properties) {
+		this.eventName = eventName;
 		this.location = location;
-		this.description = description;
-		this.catagory = catagory;
-		this.price = price;
+		this.intro = intro;
+		this.snippet = snippet;
+		this.label = label;
 		this.score = score;
 		this.imageURL = imageURL;
-		this.association = association;
-		this.isVisited = false;
+		this.isVisited = isVisited;
+		this.properties = properties;
+	}
+
+	public String getEventName() {
+		return eventName;
+	}
+
+	public void setEventName(String eventName) {
+		this.eventName = eventName;
 	}
 
 	public LocationEntity getLocation() {
@@ -38,35 +49,35 @@ public class EventInfo {
 		this.location = location;
 	}
 
-	public String getDescription() {
-		return description;
+	public String getIntro() {
+		return intro;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
+	public void setIntro(String intro) {
+		this.intro = intro;
 	}
 
-	public String getCatagory() {
-		return catagory;
+	public String getSnippet() {
+		return snippet;
 	}
 
-	public void setCatagory(String catagory) {
-		this.catagory = catagory;
+	public void setSnippet(String snippet) {
+		this.snippet = snippet;
 	}
 
-	public Price getPrice() {
-		return price;
+	public String getLabel() {
+		return label;
 	}
 
-	public void setPrice(Price price) {
-		this.price = price;
+	public void setLabel(String label) {
+		this.label = label;
 	}
 
-	public int getScore() {
+	public double getScore() {
 		return score;
 	}
 
-	public void setScore(int score) {
+	public void setScore(double score) {
 		this.score = score;
 	}
 
@@ -78,20 +89,20 @@ public class EventInfo {
 		this.imageURL = imageURL;
 	}
 
-	public AssociateTo getAssociation() {
-		return association;
-	}
-
-	public void setAssociation(AssociateTo association) {
-		this.association = association;
-	}
-
 	public boolean isVisited() {
 		return isVisited;
 	}
 
 	public void setVisited(boolean isVisited) {
 		this.isVisited = isVisited;
+	}
+
+	public Map<String, String> getProperties() {
+		return properties;
+	}
+
+	public void setProperties(Map<String, String> properties) {
+		this.properties = properties;
 	}
 
 	
