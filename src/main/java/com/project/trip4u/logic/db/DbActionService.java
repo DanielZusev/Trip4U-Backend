@@ -39,24 +39,24 @@ public class DbActionService implements ActionService{
 	
 	@Override
 	public Object invokeAction(ActionBoundary action) throws ParseException {
-		if( action.getInvokeBy() == null) 
-			throw new InternalServerException("InvokeBy must not be null");
-		
-		if(action.getType() == null || action.getType().toString().isEmpty()) 
-			throw new InternalServerException("Type must not be null");
-		
-		if( action.getElementId() == null) 
-			throw new InternalServerException("Element Id must not be null");
-		
-		String userId = action.getInvokeBy();
-		UserEntity userEntity = this.userDao.findByEmail(userId)
-				.orElseThrow(() -> new NotFoundException("User With This Email Not Exist"));
-		
-		if(action.getType() == ActionType.UPDATE || action.getType() == ActionType.DELETE) {
-			String elementId = action.getElementId();
-			ElementEntity elementEntity = this.elementDao.findByElementId(elementId)
-					.orElseThrow(() -> new NotFoundException("Element With This Id Not Exist"));
-		}
+//		if( action.getInvokeBy() == null) 
+//			throw new InternalServerException("InvokeBy must not be null");
+//		
+//		if(action.getType() == null || action.getType().toString().isEmpty()) 
+//			throw new InternalServerException("Type must not be null");
+//		
+//		if( action.getElementId() == null) 
+//			throw new InternalServerException("Element Id must not be null");
+//		
+//		String userId = action.getInvokeBy();
+//		UserEntity userEntity = this.userDao.findByEmail(userId)
+//				.orElseThrow(() -> new NotFoundException("User With This Email Not Exist"));
+//		
+//		if(action.getType() == ActionType.UPDATE || action.getType() == ActionType.DELETE) {
+//			String elementId = action.getElementId();
+//			ElementEntity elementEntity = this.elementDao.findByElementId(elementId)
+//					.orElseThrow(() -> new NotFoundException("Element With This Id Not Exist"));
+//		}
 		
 		String key = UUID.randomUUID().toString();
 		action.setId(key);

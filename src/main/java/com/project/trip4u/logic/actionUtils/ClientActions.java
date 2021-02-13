@@ -2,16 +2,27 @@ package com.project.trip4u.logic.actionUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 
 import com.project.trip4u.boundary.ActionBoundary;
+import com.project.trip4u.boundaryUtils.EventInfo;
 import com.project.trip4u.boundaryUtils.TripInfo;
 import com.project.trip4u.converter.AttributeConverter;
 import com.project.trip4u.dao.ElementDao;
@@ -19,6 +30,10 @@ import com.project.trip4u.data.ActionType;
 import com.project.trip4u.entity.ElementEntity;
 import com.project.trip4u.exception.NotFoundException;
 import com.project.trip4u.utils.Consts;
+import com.project.trip4u.utils.Credentials;
+
+import org.springframework.web.client.RestTemplate;
+
 
 @Component
 public class ClientActions {
@@ -43,13 +58,13 @@ public class ClientActions {
 
 		switch (type) {
 		case GENERATE:
-			generateTrip(action);
+			generateTrip(action); break;
 
 		case DELETE:
-			deleteTrip(action);
+			deleteTrip(action); break;
 
 		case UPDATE:
-			UpdateTrip(action);
+			UpdateTrip(action); break;
 
 		default:
 			new NotFoundException("Action Type Not Valid");
@@ -95,10 +110,29 @@ public class ClientActions {
 					+ "&fields=name,coordinates,intro,snippet,properties,images,score",
 					trip.getStartLocation(), trip.getEndLocation(), category, numOfEvents);
 			
+			RestTemplate restTemplate = new RestTemplate();  
+			
+			HttpHeaders headers = new HttpHeaders();
+			headers.setAccept(Collections.singletonList(new MediaType("application","json")));
+			
+			headers.add("X-Triposo-Account", Credentials.TRIPOSO_ACCOUNT);
+			headers.add("X-Triposo-Token", Credentials.TRIPOSO_TOKEN);
+			
+			HttpEntity<?> httpEntity = new HttpEntity<Object>(headers);
+			
+			restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+
+			//ArrayList<EventInfo> eventInfo = restTemplate.exchange(query, HttpMethod.GET, httpEntity, ArrayList.class).getBody();
+			ResponseEntity<JSONObject> response = restTemplate.exchange(query, HttpMethod.GET, httpEntity, JSONObject.class);
+			//JSONArray events = response.getBody().getJSONArray("results");
 		
 			
+			//for (EventInfo eventInfo : events) {
+				System.out.println(response.getBody() + "\n");
+			//}
+ 			 
 		}
-
+		
 	}
 
 	public static int getDifferenseBetweenDates(String start, String end) throws ParseException {
@@ -112,4 +146,5 @@ public class ClientActions {
 
 		return days;
 	}
+	
 }

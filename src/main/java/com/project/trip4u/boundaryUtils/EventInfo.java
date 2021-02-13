@@ -6,7 +6,7 @@ import com.project.trip4u.entity.LocationEntity;
 
 public class EventInfo {
 	
-	private String eventName;
+	private String name;
 	private LocationEntity location;
 	private String intro;
 	private String snippet;
@@ -22,7 +22,7 @@ public class EventInfo {
 
 	public EventInfo(String eventName, LocationEntity location, String intro, String snippet, String label,
 			double score, String imageURL, boolean isVisited, Map<String, String> properties) {
-		this.eventName = eventName;
+		this.name = eventName;
 		this.location = location;
 		this.intro = intro;
 		this.snippet = snippet;
@@ -34,11 +34,11 @@ public class EventInfo {
 	}
 
 	public String getEventName() {
-		return eventName;
+		return name;
 	}
 
 	public void setEventName(String eventName) {
-		this.eventName = eventName;
+		this.name = eventName;
 	}
 
 	public LocationEntity getLocation() {
