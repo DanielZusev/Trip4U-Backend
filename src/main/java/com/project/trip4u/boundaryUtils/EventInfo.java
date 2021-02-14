@@ -5,7 +5,8 @@ import java.util.Map;
 import com.project.trip4u.entity.LocationEntity;
 
 public class EventInfo {
-	
+
+	private String id;
 	private String name;
 	private LocationEntity location;
 	private String intro;
@@ -14,15 +15,16 @@ public class EventInfo {
 	private double score;
 	private String imageURL;
 	private boolean isVisited;
-	private Map<String,String> properties;
-	
+	private Map<String, String> properties;
+
 	public EventInfo() {
 
 	}
 
-	public EventInfo(String eventName, LocationEntity location, String intro, String snippet, String label,
+	public EventInfo(String id, String name, LocationEntity location, String intro, String snippet, String label,
 			double score, String imageURL, boolean isVisited, Map<String, String> properties) {
-		this.name = eventName;
+		this.id = id;
+		this.name = name;
 		this.location = location;
 		this.intro = intro;
 		this.snippet = snippet;
@@ -33,12 +35,20 @@ public class EventInfo {
 		this.properties = properties;
 	}
 
-	public String getEventName() {
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getName() {
 		return name;
 	}
 
-	public void setEventName(String eventName) {
-		this.name = eventName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public LocationEntity getLocation() {
@@ -105,6 +115,12 @@ public class EventInfo {
 		this.properties = properties;
 	}
 
-	
+	@Override
+	public String toString() {
+		return "EventInfo [id=" + id + ", name=" + name + ", location=" + location + ", intro=" + intro + ", snippet="
+				+ snippet + ", label=" + label + ", score=" + score + ", imageURL=" + imageURL + ", isVisited="
+				+ isVisited + ", properties=" + properties + "]";
+	}
+
 	
 }

@@ -21,10 +21,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 
+import com.project.trip4u.algorithm.Algorithm;
 import com.project.trip4u.boundary.ActionBoundary;
 import com.project.trip4u.boundaryUtils.EventInfo;
 import com.project.trip4u.boundaryUtils.TripInfo;
 import com.project.trip4u.converter.AttributeConverter;
+import com.project.trip4u.converter.JsonConverter;
 import com.project.trip4u.dao.ElementDao;
 import com.project.trip4u.data.ActionType;
 import com.project.trip4u.entity.ElementEntity;
@@ -34,12 +36,12 @@ import com.project.trip4u.utils.Credentials;
 
 import org.springframework.web.client.RestTemplate;
 
-
 @Component
 public class ClientActions {
 
 	private static ElementDao elementDao;
 	private static AttributeConverter attributeConverter;
+	private static JsonConverter jsonConverter;
 
 	@Autowired
 	public void setElementDao(ElementDao elementDao) {
@@ -51,6 +53,12 @@ public class ClientActions {
 		ClientActions.attributeConverter = attributeConverter;
 	}
 
+	@Autowired
+	public void setJsonConverter(JsonConverter jsonConverter) {
+		ClientActions.jsonConverter = jsonConverter;
+	}
+	
+
 	public static Object actionInvoker(ActionBoundary action) throws ParseException {
 
 		ActionType type = action.getType();
@@ -58,13 +66,16 @@ public class ClientActions {
 
 		switch (type) {
 		case GENERATE:
-			generateTrip(action); break;
+			generateTrip(action);
+			break;
 
 		case DELETE:
-			deleteTrip(action); break;
+			deleteTrip(action);
+			break;
 
 		case UPDATE:
-			UpdateTrip(action); break;
+			UpdateTrip(action);
+			break;
 
 		default:
 			new NotFoundException("Action Type Not Valid");
@@ -93,46 +104,43 @@ public class ClientActions {
 
 	private static void generateTrip(ActionBoundary action) throws ParseException {
 
+		ArrayList<EventInfo> allEvents = new ArrayList<>();
+
 		TripInfo trip = attributeConverter.toAttribute(action.getMoreDetails().get("trip"), TripInfo.class);
-		
+
 		int tripDays = getDifferenseBetweenDates(trip.getStartDate(), trip.getEndDate());
-		int numOfEvents = (int)Math.ceil(( tripDays * trip.getDayLoad().getValue() ) / trip.getCategories().size());	
-		
+		int numOfEvents = (int) Math.ceil((tripDays * trip.getDayLoad().getValue()) / trip.getCategories().size());
+
 		for (String category : trip.getCategories()) {
-			
 			String query = String.format(
-					Consts.BASE_URL
+					Consts.BASE_TRIPOSO_URL 
 					+ "annotate=distance:linestring:%s,%s" 
 					+ "&tag_labels=%s" 
-					+ "&distance=<10000" 
+					+ "&distance=<10000"
 					+ "&order_by=-score" 
-					+ "&count=%d" 
-					+ "&fields=name,coordinates,intro,snippet,properties,images,score",
+					+ "&count=%d"
+					+ "&fields=name,coordinates,intro,snippet,images,properties,score",
 					trip.getStartLocation(), trip.getEndLocation(), category, numOfEvents);
-			
-			RestTemplate restTemplate = new RestTemplate();  
-			
+
 			HttpHeaders headers = new HttpHeaders();
-			headers.setAccept(Collections.singletonList(new MediaType("application","json")));
-			
+			headers.setAccept(Collections.singletonList(new MediaType("application", "json")));
 			headers.add("X-Triposo-Account", Credentials.TRIPOSO_ACCOUNT);
 			headers.add("X-Triposo-Token", Credentials.TRIPOSO_TOKEN);
-			
+
 			HttpEntity<?> httpEntity = new HttpEntity<Object>(headers);
-			
+
+			RestTemplate restTemplate = new RestTemplate();
 			restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
 
-			//ArrayList<EventInfo> eventInfo = restTemplate.exchange(query, HttpMethod.GET, httpEntity, ArrayList.class).getBody();
-			ResponseEntity<JSONObject> response = restTemplate.exchange(query, HttpMethod.GET, httpEntity, JSONObject.class);
-			//JSONArray events = response.getBody().getJSONArray("results");
-		
-			
-			//for (EventInfo eventInfo : events) {
-				System.out.println(response.getBody() + "\n");
-			//}
- 			 
+			ResponseEntity<String> response = restTemplate.exchange(query, HttpMethod.GET, httpEntity, String.class);
+			JSONObject events = new JSONObject(response.getBody());
+			JSONArray results = events.getJSONArray("results");
+			for (int i = 0; i < results.length(); i++) {
+				allEvents.add(jsonConverter.toEventInfo(results.getJSONObject(i), category));
+			}
 		}
-		
+		System.out.println(allEvents.size());
+		Algorithm.generateTrip(allEvents, trip);
 	}
 
 	public static int getDifferenseBetweenDates(String start, String end) throws ParseException {
@@ -146,5 +154,5 @@ public class ClientActions {
 
 		return days;
 	}
-	
+
 }
