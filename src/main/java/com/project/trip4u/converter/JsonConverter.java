@@ -22,7 +22,9 @@ public class JsonConverter {
 		eventInfo.setIntro(getObjectStr(jsonObject, "intro"));
 		eventInfo.setScore(Double.parseDouble(getObjectStr(jsonObject, "score")));
 		eventInfo.setLocation(getLocationEntity(jsonObject));
-		eventInfo.setImageURL(getObjectStr(jsonObject.getJSONArray("images").getJSONObject(0), "source_url"));
+		if(jsonObject.getJSONArray("images").length() > 0) {
+			eventInfo.setImageURL(getObjectStr(jsonObject.getJSONArray("images").getJSONObject(0), "source_url"));
+		}
 		eventInfo.setLabel(category);
 		eventInfo.setProperties(getObjectProperties(jsonObject.getJSONArray("properties")));
 		eventInfo.setVisited(false);

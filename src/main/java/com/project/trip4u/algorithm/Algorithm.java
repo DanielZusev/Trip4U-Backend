@@ -46,38 +46,44 @@ public class Algorithm {
 	
 	// Algorithm
 	public static ArrayList<EventInfo> generateTrip(ArrayList<EventInfo> events, TripInfo tripInfo){
+		AlgorithmObjectHelper algorithmObjectHelper = new AlgorithmObjectHelper();
 		double totalLength = 0;
 		ArrayList<EventInfo> totalRoute = new ArrayList<>();
 		// Calculate distance matrix
 		double[][] distanceMatrix = calculateDistanceMatrix(events);
-		for(int i = 0; i < distanceMatrix.length; i++) {
-			for(int j = 0; j < distanceMatrix[i].length; j++) {
-				System.out.print(distanceMatrix[i][j] + "\t\t");
+
+		algorithmObjectHelper.setDistanceMatrix(distanceMatrix);
+	
+		for(int i = 0; i < events.size(); i++) {
+			double length = 0;
+			ArrayList<EventInfo> eventsCopy = new ArrayList<>(); 
+			eventsCopy.addAll(events);
+			for(int j = 0; j < eventsCopy.size(); j++) {
+				eventsCopy.get(j).setVisited(false);
 			}
-			System.out.println();
+			ArrayList<EventInfo> route = new ArrayList<>();
+			// what to do with start point????????????????
+			route.add(eventsCopy.get(i));
+			eventsCopy.get(i).setVisited(true);
+			algorithmObjectHelper.setEvents(eventsCopy);
+			algorithmObjectHelper.setRoute(route);
+			algorithmObjectHelper.setLength(length);
+
+			while(!checkAllVisited(algorithmObjectHelper.getEvents())) {
+				algorithmObjectHelper = findNearestEvent(algorithmObjectHelper);
+			}
+			if(totalLength == 0) { // first route
+				totalLength = algorithmObjectHelper.getLength();
+				totalRoute.addAll(algorithmObjectHelper.getRoute());
+			} else {
+				if(algorithmObjectHelper.getLength() < totalLength) {
+					totalLength = algorithmObjectHelper.getLength();
+					totalRoute.clear();
+					totalRoute.addAll(algorithmObjectHelper.getRoute());
+				}
+			}
+			
 		}
-//		for(int i = 0; i < events.size(); i++) {
-//			double length = 0;
-//			ArrayList<EventInfo> eventsCopy = events; // BEWARE!!!!!!!!!!
-//			ArrayList<EventInfo> route = new ArrayList<>();
-//			// what to do with start point????????????????
-//			route.add(eventsCopy.get(i));
-//			//length += distanceMatrix[i][i];
-//			eventsCopy.get(i).setVisited(true);
-//			while(!checkAllVisited(eventsCopy)) {
-//				findNearestEvent(route, eventsCopy, distanceMatrix, length);
-//			}
-//			if(totalLength == 0) { // first route
-//				totalLength = length;
-//				totalRoute = route;
-//			} else {
-//				if(length < totalLength) {
-//					totalLength = length;
-//					totalRoute = route;
-//				}
-//			}
-//			
-//		}
 		return totalRoute;
 	}
 	
@@ -123,14 +129,22 @@ public class Algorithm {
 	}
 	
 	// Function that finds the nearest event.
-	private static void findNearestEvent(ArrayList<EventInfo> route, ArrayList<EventInfo> events, double[][] distanceMatrix, double length) {
+	private static AlgorithmObjectHelper findNearestEvent(AlgorithmObjectHelper algorithmObjectHelper) {
 		double minDistance = 0;
 		int tempIndex = -1;
+		ArrayList<EventInfo> events = new ArrayList<>();
+		ArrayList<EventInfo> route = new ArrayList<>();
+		double[][] distanceMatrix;
+		double length;
+		events.addAll(algorithmObjectHelper.getEvents());
+		route.addAll(algorithmObjectHelper.getRoute());
+		distanceMatrix = algorithmObjectHelper.getDistanceMatrix();
+		length = algorithmObjectHelper.getLength();
 		try {
 			int eventIndex = findEventIndex(events, route.get(route.size() - 1));
 			for(int k = 0; k < events.size(); k++) {
 				if(!events.get(k).isVisited()) {
-					if(minDistance == 0) {
+					if(minDistance == 0) { // First round
 						minDistance = distanceMatrix[eventIndex][k];
 						tempIndex = k;
 					} else {
@@ -143,9 +157,11 @@ public class Algorithm {
 			}
 			if(tempIndex != -1) {
 				route.add(events.get(tempIndex));
-				events.get(tempIndex).setVisited(true);;
+				events.get(tempIndex).setVisited(true);
 				length += minDistance;
+				return new AlgorithmObjectHelper(route, events, distanceMatrix, length);
 			}
+			return new AlgorithmObjectHelper();
 		} catch(Exception e) {
 			throw new IndexOutOfBoundsException("Index out of bounds.");
 		}

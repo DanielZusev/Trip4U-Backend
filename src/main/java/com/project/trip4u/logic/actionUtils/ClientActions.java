@@ -110,7 +110,17 @@ public class ClientActions {
 
 		int tripDays = getDifferenseBetweenDates(trip.getStartDate(), trip.getEndDate());
 		int numOfEvents = (int) Math.ceil((tripDays * trip.getDayLoad().getValue()) / trip.getCategories().size());
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(Collections.singletonList(new MediaType("application", "json")));
+		headers.add("X-Triposo-Account", Credentials.TRIPOSO_ACCOUNT);
+		headers.add("X-Triposo-Token", Credentials.TRIPOSO_TOKEN);
 
+		HttpEntity<?> httpEntity = new HttpEntity<Object>(headers);
+
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+		
 		for (String category : trip.getCategories()) {
 			String query = String.format(
 					Consts.BASE_TRIPOSO_URL 
@@ -122,16 +132,6 @@ public class ClientActions {
 					+ "&fields=name,coordinates,intro,snippet,images,properties,score",
 					trip.getStartLocation(), trip.getEndLocation(), category, numOfEvents);
 
-			HttpHeaders headers = new HttpHeaders();
-			headers.setAccept(Collections.singletonList(new MediaType("application", "json")));
-			headers.add("X-Triposo-Account", Credentials.TRIPOSO_ACCOUNT);
-			headers.add("X-Triposo-Token", Credentials.TRIPOSO_TOKEN);
-
-			HttpEntity<?> httpEntity = new HttpEntity<Object>(headers);
-
-			RestTemplate restTemplate = new RestTemplate();
-			restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
 			ResponseEntity<String> response = restTemplate.exchange(query, HttpMethod.GET, httpEntity, String.class);
 			JSONObject events = new JSONObject(response.getBody());
 			JSONArray results = events.getJSONArray("results");
@@ -139,7 +139,24 @@ public class ClientActions {
 				allEvents.add(jsonConverter.toEventInfo(results.getJSONObject(i), category));
 			}
 		}
-		System.out.println(allEvents.size());
+		int numOfTotalEvents = tripDays * trip.getDayLoad().getValue();
+		if(allEvents.size() < numOfTotalEvents) {
+			String query = String.format(
+					Consts.BASE_TRIPOSO_URL 
+					+ "annotate=distance:linestring:%s,%s" 
+					+ "&tag_labels=character-Popular_with_locals" 
+					+ "&distance=<10000"
+					+ "&order_by=-character-Popular_with_locals_score" 
+					+ "&count=%d"
+					+ "&fields=name,coordinates,intro,snippet,images,properties,score",
+					trip.getStartLocation(), trip.getEndLocation(), numOfTotalEvents - allEvents.size());
+			ResponseEntity<String> response = restTemplate.exchange(query, HttpMethod.GET, httpEntity, String.class);
+			JSONObject events = new JSONObject(response.getBody());
+			JSONArray results = events.getJSONArray("results");
+			for (int i = 0; i < results.length(); i++) {
+				allEvents.add(jsonConverter.toEventInfo(results.getJSONObject(i), "hidden gems"));
+			}
+		}
 		Algorithm.generateTrip(allEvents, trip);
 	}
 
