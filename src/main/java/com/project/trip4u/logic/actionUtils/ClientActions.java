@@ -66,7 +66,8 @@ public class ClientActions {
 
 		switch (type) {
 		case GENERATE:
-			generateTrip(action);
+			map.put("trip", generateTrip(action));
+			//generateTrip(action);
 			break;
 
 		case DELETE:
@@ -81,7 +82,7 @@ public class ClientActions {
 			new NotFoundException("Action Type Not Valid");
 		}
 
-		return null;
+		return map;
 	}
 
 	private static void UpdateTrip(ActionBoundary action) {
@@ -102,7 +103,7 @@ public class ClientActions {
 
 	}
 
-	private static void generateTrip(ActionBoundary action) throws ParseException {
+	private static TripInfo generateTrip(ActionBoundary action) throws ParseException {
 
 		ArrayList<EventInfo> allEvents = new ArrayList<>();
 
@@ -157,7 +158,7 @@ public class ClientActions {
 				allEvents.add(jsonConverter.toEventInfo(results.getJSONObject(i), "hidden gems"));
 			}
 		}
-		Algorithm.generateTrip(allEvents, trip);
+		return Algorithm.generateTrip(allEvents, trip);
 	}
 
 	public static int getDifferenseBetweenDates(String start, String end) throws ParseException {

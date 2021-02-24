@@ -45,7 +45,7 @@ public class Algorithm {
 	}
 	
 	// Algorithm
-	public static ArrayList<EventInfo> generateTrip(ArrayList<EventInfo> events, TripInfo tripInfo){
+	public static TripInfo generateTrip(ArrayList<EventInfo> events, TripInfo tripInfo){
 		AlgorithmObjectHelper algorithmObjectHelper = new AlgorithmObjectHelper();
 		double totalLength = 0;
 		ArrayList<EventInfo> totalRoute = new ArrayList<>();
@@ -84,7 +84,8 @@ public class Algorithm {
 			}
 			
 		}
-		return totalRoute;
+		tripInfo.setRoute(totalRoute);
+		return tripInfo;
 	}
 	
 	// Function that calculates the difference between the days.
