@@ -67,7 +67,7 @@ public class ClientActions {
 		switch (type) {
 		case GENERATE:
 			map.put("trip", generateTrip(action));
-			//generateTrip(action);
+			generateTrip(action);
 			break;
 
 		case DELETE:

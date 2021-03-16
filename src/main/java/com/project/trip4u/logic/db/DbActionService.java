@@ -76,7 +76,7 @@ public class DbActionService implements ActionService{
 
 	@Override
 	public void deleteAllActions(String adminEmail) {
-		// TODO Auto-generated method stub
+		this.actionDao.deleteAll();
 		
 	}
 	
