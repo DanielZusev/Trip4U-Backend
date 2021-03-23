@@ -3,6 +3,7 @@ package com.project.trip4u.boundaryUtils;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import com.project.trip4u.data.DayLoad;
 
@@ -15,14 +16,15 @@ public class TripInfo {
 	private DayLoad dayLoad;
 	private String startLocation; //UI sends Coordinates
 	private String endLocation; //UI sends Coordinates
-	private ArrayList<EventInfo> route;
+	private Map<String, ArrayList<EventInfo>> route;
+	private int length;
 	
 	public TripInfo() {
 
 	}
 
 	public TripInfo(String startDate, String endDate, List<String> categories, String passengers,
-			DayLoad dayLoad, String startLocation, String endLocation, ArrayList<EventInfo> route) {
+			DayLoad dayLoad, String startLocation, String endLocation, Map<String, ArrayList<EventInfo>> route, int length) {
 		
 		this.startDate = startDate;
 		this.endDate = endDate;
@@ -32,6 +34,7 @@ public class TripInfo {
 		this.startLocation = startLocation;
 		this.endLocation = endLocation;
 		this.route = route;
+		this.length = length;
 	}
 
 
@@ -91,12 +94,20 @@ public class TripInfo {
 		this.endLocation = endLocation;
 	}
 
-	public ArrayList<EventInfo> getRoute() {
+	public Map<String, ArrayList<EventInfo>> getRoute() {
 		return route;
 	}
 
-	public void setRoute(ArrayList<EventInfo> route) {
+	public void setRoute(Map<String, ArrayList<EventInfo>> route) {
 		this.route = route;
+	}
+	
+	public int getLength() {
+		return length;
+	}
+	
+	public void setLength(int length) {
+		this.length = length;
 	}
 
 	

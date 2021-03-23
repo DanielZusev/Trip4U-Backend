@@ -6,6 +6,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -49,6 +51,7 @@ public class Algorithm {
 		AlgorithmObjectHelper algorithmObjectHelper = new AlgorithmObjectHelper();
 		double totalLength = 0;
 		ArrayList<EventInfo> totalRoute = new ArrayList<>();
+		Map<String, ArrayList<EventInfo>> routeByDays = new HashMap<>();
 		// Calculate distance matrix
 		double[][] distanceMatrix = calculateDistanceMatrix(events);
 
@@ -84,7 +87,15 @@ public class Algorithm {
 			}
 			
 		}
-		tripInfo.setRoute(totalRoute);
+		for(int i = 0; i < tripInfo.getLength(); i++) {
+			ArrayList<EventInfo> dayRoute = new ArrayList<>();
+			for(int j = 0; j < tripInfo.getDayLoad().getValue(); j++) {
+				dayRoute.add(totalRoute.get((i * tripInfo.getDayLoad().getValue()) + j));
+			}
+			routeByDays.put(String.valueOf(i + 1), dayRoute);
+		}
+		//tripInfo.setRoute(totalRoute);
+		tripInfo.setRoute(routeByDays);
 		return tripInfo;
 	}
 	

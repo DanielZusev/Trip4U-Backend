@@ -110,6 +110,7 @@ public class ClientActions {
 		TripInfo trip = attributeConverter.toAttribute(action.getMoreDetails().get("trip"), TripInfo.class);
 
 		int tripDays = getDifferenseBetweenDates(trip.getStartDate(), trip.getEndDate());
+		trip.setLength(tripDays);
 		int numOfEvents = (int) Math.ceil((tripDays * trip.getDayLoad().getValue()) / trip.getCategories().size());
 		
 		HttpHeaders headers = new HttpHeaders();
