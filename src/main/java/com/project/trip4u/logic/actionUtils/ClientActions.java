@@ -27,9 +27,8 @@ import com.project.trip4u.boundaryUtils.EventInfo;
 import com.project.trip4u.boundaryUtils.TripInfo;
 import com.project.trip4u.converter.AttributeConverter;
 import com.project.trip4u.converter.JsonConverter;
-import com.project.trip4u.dao.ElementDao;
+import com.project.trip4u.dao.TripDao;
 import com.project.trip4u.data.ActionType;
-import com.project.trip4u.entity.ElementEntity;
 import com.project.trip4u.exception.NotFoundException;
 import com.project.trip4u.utils.Consts;
 import com.project.trip4u.utils.Credentials;
@@ -39,13 +38,13 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class ClientActions {
 
-	private static ElementDao elementDao;
+	private static TripDao tripDao;
 	private static AttributeConverter attributeConverter;
 	private static JsonConverter jsonConverter;
 
 	@Autowired
-	public void setElementDao(ElementDao elementDao) {
-		ClientActions.elementDao = elementDao;
+	public void setTripDao(TripDao tripDao) {
+		ClientActions.tripDao = tripDao;
 	}
 
 	@Autowired
@@ -65,9 +64,19 @@ public class ClientActions {
 		Map<String, Object> map = new HashMap<>(); // Optional for Get actions
 
 		switch (type) {
+		case CREATE:
+			map.put("trip", generateTrip(action));
+			tripDao.save((TripInfo)map.get("trip"));
+			break;
+			
+		case EDIT:
+			map.put("trip", generateTrip(action));
+			tripDao.save((TripInfo)map.get("trip"));
+			break;
+			
 		case GENERATE:
 			map.put("trip", generateTrip(action));
-			generateTrip(action);
+			tripDao.save((TripInfo)map.get("trip"));
 			break;
 
 		case DELETE:
@@ -86,21 +95,18 @@ public class ClientActions {
 	}
 
 	private static void UpdateTrip(ActionBoundary action) {
-		ElementEntity elementEntity = elementDao.findByElementId(action.getElementId())
+		TripInfo tripInfo = tripDao.findByTripId(action.getElementId())
 				.orElseThrow(() -> new NotFoundException("Element With This Id Not Exist"));
-
-		TripInfo updatedTrip = attributeConverter.toAttribute(action.getMoreDetails().get("trip"), TripInfo.class);
-		elementEntity.getMoreDetails().put("trip", updatedTrip);
-		elementDao.save(elementEntity);
-
+		TripInfo updateTripInfo = attributeConverter.toAttribute(action.getMoreDetails().get("trip"), TripInfo.class);
+		updateTripInfo.setTripId(action.getElementId());
+		updateTripInfo.setUserId(action.getInvokeBy());
+		tripDao.save(updateTripInfo);
 	}
 
 	private static void deleteTrip(ActionBoundary action) {
-		ElementEntity elementEntity = elementDao.findByElementId(action.getElementId())
+		TripInfo tripInfo = tripDao.findByTripId(action.getElementId())
 				.orElseThrow(() -> new NotFoundException("Element With This Id Not Exist"));
-
-		elementDao.deleteById(action.getElementId());
-
+		tripDao.deleteById(tripInfo.getTripId());
 	}
 
 	private static TripInfo generateTrip(ActionBoundary action) throws ParseException {
@@ -108,10 +114,17 @@ public class ClientActions {
 		ArrayList<EventInfo> allEvents = new ArrayList<>();
 
 		TripInfo trip = attributeConverter.toAttribute(action.getMoreDetails().get("trip"), TripInfo.class);
+		
+		trip.setTripId(action.getElementId());
+		trip.setUserId(action.getInvokeBy());
 
 		int tripDays = getDifferenseBetweenDates(trip.getStartDate(), trip.getEndDate());
 		trip.setLength(tripDays);
-		int numOfEvents = (int) Math.ceil((tripDays * trip.getDayLoad().getValue()) / trip.getCategories().size());
+		
+		int numOfEvents = (int) Math.ceil((tripDays * trip.getDayLoad().getValue()) / trip.getCategories().size());;
+		if(action.getType().toString().equals("EDIT") || action.getType().toString().equals("CREATE")) {
+			numOfEvents *= 2;
+		} 
 		
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Collections.singletonList(new MediaType("application", "json")));
@@ -141,7 +154,11 @@ public class ClientActions {
 				allEvents.add(jsonConverter.toEventInfo(results.getJSONObject(i), category));
 			}
 		}
+		
 		int numOfTotalEvents = tripDays * trip.getDayLoad().getValue();
+		if(action.getType().toString().equals("EDIT") || action.getType().toString().equals("CREATE")) {
+			numOfTotalEvents *= 2;
+		} 
 		if(allEvents.size() < numOfTotalEvents) {
 			String query = String.format(
 					Consts.BASE_TRIPOSO_URL 
@@ -159,6 +176,11 @@ public class ClientActions {
 				allEvents.add(jsonConverter.toEventInfo(results.getJSONObject(i), "hidden gems"));
 			}
 		}
+		
+		if(action.getType().toString().equals("EDIT") || action.getType().toString().equals("CREATE")) {
+			trip.setEventsPool(allEvents);
+			return trip;
+		} 
 		return Algorithm.generateTrip(allEvents, trip);
 	}
 
@@ -169,7 +191,7 @@ public class ClientActions {
 		Date secondDate = sdf.parse(end);
 
 		long diffInMillies = Math.abs(secondDate.getTime() - firstDate.getTime());
-		int days = (int) TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+		int days = (int) TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS) + 1;
 
 		return days;
 	}

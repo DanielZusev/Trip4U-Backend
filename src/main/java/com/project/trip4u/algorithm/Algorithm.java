@@ -25,7 +25,6 @@ import com.project.trip4u.boundaryUtils.EventInfo;
 import com.project.trip4u.boundaryUtils.TripInfo;
 import com.project.trip4u.converter.AttributeConverter;
 import com.project.trip4u.converter.JsonConverter;
-import com.project.trip4u.entity.ElementEntity;
 import com.project.trip4u.logic.actionUtils.ClientActions;
 import com.project.trip4u.utils.Consts;
 import com.project.trip4u.utils.Credentials;
@@ -116,7 +115,6 @@ public class Algorithm {
 				points += ";";
 			}
 		}
-		System.out.println(points);
 		String query = String.format(
 				Consts.BASE_BING_URL 
 				+ "origins=%s" 

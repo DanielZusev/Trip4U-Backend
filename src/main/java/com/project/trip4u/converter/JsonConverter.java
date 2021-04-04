@@ -62,15 +62,15 @@ public class JsonConverter {
 	}
 
 	private Map<String, String> getObjectProperties(JSONArray jsonArray) {
+		Map<String, String> map = new HashMap<>();
 		if(jsonArray.length() != 0) {
-			Map<String, String> map = new HashMap<>();
 			for(int i = 0; i < jsonArray.length(); i++) {
 				String key = jsonArray.getJSONObject(i).get("name").toString();
 				String value = jsonArray.getJSONObject(i).get("value").toString();
 				map.put(key, value);
 			}
 		}
-		return new HashMap<>();
+		return map;
 	}
 
 }
