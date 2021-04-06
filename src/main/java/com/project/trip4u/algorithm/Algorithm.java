@@ -25,79 +25,127 @@ import com.project.trip4u.boundaryUtils.EventInfo;
 import com.project.trip4u.boundaryUtils.TripInfo;
 import com.project.trip4u.converter.AttributeConverter;
 import com.project.trip4u.converter.JsonConverter;
+import com.project.trip4u.entity.LocationEntity;
+import com.project.trip4u.exception.NotFoundException;
 import com.project.trip4u.logic.actionUtils.ClientActions;
 import com.project.trip4u.utils.Consts;
 import com.project.trip4u.utils.Credentials;
 
 @Component
 public class Algorithm {
-	
+
 	private static AttributeConverter attributeConverter;
 	private static JsonConverter jsonConverter;
-	
+
 	@Autowired
 	public void setAttributeConverter(AttributeConverter attributeConverter) {
 		Algorithm.attributeConverter = attributeConverter;
 	}
-	
+
 	@Autowired
 	public void setJsonConverter(JsonConverter jsonConverter) {
 		Algorithm.jsonConverter = jsonConverter;
 	}
-	
+
 	// Algorithm
-	public static TripInfo generateTrip(ArrayList<EventInfo> events, TripInfo tripInfo){
+	public static TripInfo generateTrip(ArrayList<EventInfo> events, TripInfo tripInfo) {
 		AlgorithmObjectHelper algorithmObjectHelper = new AlgorithmObjectHelper();
 		double totalLength = 0;
 		ArrayList<EventInfo> totalRoute = new ArrayList<>();
 		Map<String, ArrayList<EventInfo>> routeByDays = new HashMap<>();
+
+		EventInfo startPoint = setPoint(tripInfo.getStartLocation());
+		EventInfo endPoint = setPoint(tripInfo.getEndLocation());
+
+		events.add(0, startPoint);
+		events.add(events.size(), endPoint);
+
 		// Calculate distance matrix
 		double[][] distanceMatrix = calculateDistanceMatrix(events);
 
 		algorithmObjectHelper.setDistanceMatrix(distanceMatrix);
-	
-		for(int i = 0; i < events.size(); i++) {
+		
+		ArrayList<EventInfo> startCluster = getCluster(distanceMatrix, events, true);
+		//ArrayList<EventInfo> endCluster = getCluster(distanceMatrix, events, false);
+
+		for (int i = 0; i < startCluster.size(); i++) {
 			double length = 0;
-			ArrayList<EventInfo> eventsCopy = new ArrayList<>(); 
+			ArrayList<EventInfo> eventsCopy = new ArrayList<>();
 			eventsCopy.addAll(events);
-			for(int j = 0; j < eventsCopy.size(); j++) {
+			for (int j = 1; j < eventsCopy.size() - 1; j++) {
 				eventsCopy.get(j).setVisited(false);
 			}
 			ArrayList<EventInfo> route = new ArrayList<>();
 			// what to do with start point????????????????
-			route.add(eventsCopy.get(i));
-			eventsCopy.get(i).setVisited(true);
+			//route.add(eventsCopy.get(i));
+			route.add(startCluster.get(i));
+			int startEventIndex = findEventIndex(events, startCluster.get(i));
+			if(startEventIndex != -1)
+				eventsCopy.get(startEventIndex).setVisited(true); 
+			else
+				throw new NotFoundException("Algorithm error - Event not found");
+			//eventsCopy.get(i).setVisited(true);
 			algorithmObjectHelper.setEvents(eventsCopy);
 			algorithmObjectHelper.setRoute(route);
 			algorithmObjectHelper.setLength(length);
 
-			while(!checkAllVisited(algorithmObjectHelper.getEvents())) {
+			while (!checkAllVisited(algorithmObjectHelper.getEvents())) {
 				algorithmObjectHelper = findNearestEvent(algorithmObjectHelper);
 			}
-			if(totalLength == 0) { // first route
+			
+			
+			if (totalLength == 0) { // first route
 				totalLength = algorithmObjectHelper.getLength();
 				totalRoute.addAll(algorithmObjectHelper.getRoute());
 			} else {
-				if(algorithmObjectHelper.getLength() < totalLength) {
+				if (algorithmObjectHelper.getLength() < totalLength) {
 					totalLength = algorithmObjectHelper.getLength();
 					totalRoute.clear();
 					totalRoute.addAll(algorithmObjectHelper.getRoute());
 				}
 			}
-			
+
 		}
-		for(int i = 0; i < tripInfo.getLength(); i++) {
+		for (int i = 0; i < tripInfo.getLength(); i++) {
 			ArrayList<EventInfo> dayRoute = new ArrayList<>();
-			for(int j = 0; j < tripInfo.getDayLoad().getValue(); j++) {
+			for (int j = 0; j < tripInfo.getDayLoad().getValue(); j++) {
 				dayRoute.add(totalRoute.get((i * tripInfo.getDayLoad().getValue()) + j));
 			}
 			routeByDays.put(String.valueOf(i + 1), dayRoute);
 		}
-		//tripInfo.setRoute(totalRoute);
 		tripInfo.setRoute(routeByDays);
 		return tripInfo;
 	}
-	
+
+	private static ArrayList<EventInfo> getCluster(double[][] distanceMatrix, ArrayList<EventInfo> events, boolean isFirst) {
+		ArrayList<EventInfo> cluster = new ArrayList<>();
+		double distance = 0.0;
+		do {
+			distance += 5.0;
+			for (int i = 1; i < distanceMatrix[0].length - 1; i++) {
+				if (isFirst) { // related the start point cluster
+					if (distanceMatrix[0][i] <= distance) {
+						cluster.add(events.get(i));
+					}
+				} else { // related the end point cluster
+					if (distanceMatrix[i][events.size() - 1] <= distance) {
+						cluster.add(events.get(i));
+					}
+				}
+			}
+		} while (cluster.isEmpty());
+
+		return cluster;
+	}
+
+	private static EventInfo setPoint(String location) {
+		EventInfo point = new EventInfo();
+		point.setVisited(true);
+		String[] points = location.split(",");
+		point.setLocation(new LocationEntity(Double.parseDouble(points[0]), Double.parseDouble(points[1])));
+		return point;
+	}
+
 	// Function that calculates the difference between the days.
 	private long calculateDayDifference(Date date1, Date date2) {
 		LocalDate startDate = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -105,25 +153,18 @@ public class Algorithm {
 		long days = ChronoUnit.DAYS.between(startDate, endDate);
 		return days;
 	}
-	
+
 	// Function that calculates the distance matrix.
-	private static double[][] calculateDistanceMatrix(ArrayList<EventInfo> events){
+	private static double[][] calculateDistanceMatrix(ArrayList<EventInfo> events) {
 		String points = "";
-		for(int i = 0; i < events.size(); i++) {
+		for (int i = 0; i < events.size(); i++) {
 			points += events.get(i).getLocation().toString();
-			if(i != events.size() - 1) {
+			if (i != events.size() - 1) {
 				points += ";";
 			}
 		}
-		String query = String.format(
-				Consts.BASE_BING_URL 
-				+ "origins=%s" 
-				+ "&destinations=%s" 
-				+ "&travelMode=driving" 
-				+ "&distanceUnit=km" 
-				+ "&key=" 
-				+ Credentials.BING_KEY,
-				points, points);
+		String query = String.format(Consts.BASE_BING_URL + "origins=%s" + "&destinations=%s" + "&travelMode=driving"
+				+ "&distanceUnit=km" + "&key=" + Credentials.BING_KEY, points, points);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Collections.singletonList(new MediaType("application", "json")));
 
@@ -134,10 +175,11 @@ public class Algorithm {
 
 		ResponseEntity<String> response = restTemplate.exchange(query, HttpMethod.GET, httpEntity, String.class);
 		JSONObject distanceMatrixResponse = new JSONObject(response.getBody());
-		JSONArray results = distanceMatrixResponse.getJSONArray("resourceSets").getJSONObject(0).getJSONArray("resources").getJSONObject(0).getJSONArray("results");
+		JSONArray results = distanceMatrixResponse.getJSONArray("resourceSets").getJSONObject(0)
+				.getJSONArray("resources").getJSONObject(0).getJSONArray("results");
 		return jsonConverter.toDistanceMatrix(results, events.size());
 	}
-	
+
 	// Function that finds the nearest event.
 	private static AlgorithmObjectHelper findNearestEvent(AlgorithmObjectHelper algorithmObjectHelper) {
 		double minDistance = 0;
@@ -152,44 +194,44 @@ public class Algorithm {
 		length = algorithmObjectHelper.getLength();
 		try {
 			int eventIndex = findEventIndex(events, route.get(route.size() - 1));
-			for(int k = 0; k < events.size(); k++) {
-				if(!events.get(k).isVisited()) {
-					if(minDistance == 0) { // First round
+			for (int k = 0; k < events.size(); k++) {
+				if (!events.get(k).isVisited()) {
+					if (minDistance == 0) { // First round
 						minDistance = distanceMatrix[eventIndex][k];
 						tempIndex = k;
 					} else {
-						if(distanceMatrix[eventIndex][k] < minDistance) {
+						if (distanceMatrix[eventIndex][k] < minDistance) {
 							minDistance = distanceMatrix[eventIndex][k];
 							tempIndex = k;
 						}
 					}
 				}
 			}
-			if(tempIndex != -1) {
+			if (tempIndex != -1) {
 				route.add(events.get(tempIndex));
 				events.get(tempIndex).setVisited(true);
 				length += minDistance;
 				return new AlgorithmObjectHelper(route, events, distanceMatrix, length);
 			}
 			return new AlgorithmObjectHelper();
-		} catch(Exception e) {
+		} catch (Exception e) {
 			throw new IndexOutOfBoundsException("Index out of bounds.");
 		}
 	}
-	
+
 	// Function that checks if all events are visited.
 	private static boolean checkAllVisited(ArrayList<EventInfo> events) {
-		for(int i = 0; i < events.size(); i++) {
-			if(!events.get(i).isVisited())
+		for (int i = 0; i < events.size(); i++) {
+			if (!events.get(i).isVisited())
 				return false;
 		}
 		return true;
 	}
-	
+
 	// Function that finds the events index of specific event in the events array.
 	private static int findEventIndex(ArrayList<EventInfo> events, EventInfo event) {
-		for (int i = 0; i < events.size(); i++) {
-			if(events.get(i).getId().equals(event.getId())) {
+		for (int i = 1; i < events.size() - 1; i++) {
+			if (events.get(i).getId().equals(event.getId())) {
 				return i;
 			}
 		}

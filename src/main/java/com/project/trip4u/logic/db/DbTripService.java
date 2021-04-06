@@ -19,20 +19,21 @@ import com.project.trip4u.exception.UnauthorizedException;
 import com.project.trip4u.service.TripService;
 
 @Service
-public class DbTripService implements TripService{
+public class DbTripService implements TripService {
 
 	private TripDao tripDao;
 	private UserDao userDao;
-	
+
 	@Autowired
 	public DbTripService(TripDao tripDao, UserDao userDao) {
 		this.tripDao = tripDao;
 		this.userDao = userDao;
 	}
-	
+
 	@Override
 	public List<TripInfo> getAllTrips(String adminEmail) {
-		UserEntity invoker = this.userDao.findById(adminEmail).orElseThrow(() -> new NotFoundException("Admin doesn't exist"));
+		UserEntity invoker = this.userDao.findById(adminEmail)
+				.orElseThrow(() -> new NotFoundException("Admin doesn't exist"));
 		if (!invoker.getRole().equals(UserRole.ADMIN.toString())) {
 			throw new UnauthorizedException("This user email has no Admin permissions");
 		}
@@ -41,12 +42,27 @@ public class DbTripService implements TripService{
 
 	@Override
 	public void deleteAllTrips(String adminEmail) {
-		UserEntity invoker = this.userDao.findById(adminEmail).orElseThrow(() -> new NotFoundException("Admin doesn't exist"));
-		if(!invoker.getRole().equals(UserRole.ADMIN.toString())) {
+		UserEntity invoker = this.userDao.findById(adminEmail)
+				.orElseThrow(() -> new NotFoundException("Admin doesn't exist"));
+		if (!invoker.getRole().equals(UserRole.ADMIN.toString())) {
 			throw new UnauthorizedException("You don't have permissions to do that");
 		}
 		this.tripDao.deleteAll();
-		
+
+	}
+
+	@Override
+	public TripInfo getByTripId(String userId, String tripId) {
+		UserEntity invoker = this.userDao.findById(userId)
+				.orElseThrow(() -> new NotFoundException("User doesn't exist"));
+		return this.tripDao.findById(tripId).orElseThrow(() -> new NotFoundException("Trip not found"));
+	}
+
+	@Override
+	public List<TripInfo> getAllByUserId(String userId) {
+		UserEntity invoker = this.userDao.findById(userId)
+				.orElseThrow(() -> new NotFoundException("User doesn't exist"));
+		return StreamSupport.stream(this.tripDao.findByUserId(userId).spliterator(), false).collect(Collectors.toList());
 	}
 
 }

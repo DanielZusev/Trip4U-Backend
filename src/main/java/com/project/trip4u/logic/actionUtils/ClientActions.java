@@ -112,7 +112,18 @@ public class ClientActions {
 	private static TripInfo generateTrip(ActionBoundary action) throws ParseException {
 
 		ArrayList<EventInfo> allEvents = new ArrayList<>();
-
+		
+		Map<String, String> categories = new HashMap<String, String>() {{
+			put("hiking", "poitype-Alpine_hut|camping|daytrips|poitype-Forest|hiking|poitype-Hiking_trail|wildlife|national_park|poitype-Sight|sightseeing");
+			put("extreme", "adrenaline|amusementparks");
+			put("culture", "art|culture|history|poitype-Memorial|character-World_heritage");
+			put("shopping", "shopping|poitype-Shopping_centre|poitype-Shopping_district");
+			put("museums", "museums");
+			put("food", "cuisine|food|foodexperiences|poitype-Restaurant");
+			put("relaxing", "beaches|poitype-Botanical_garden|poitype-Hot_spring|poitype-Spa");
+			put("casino", "poitype-Casino|gambling");
+		}};
+		
 		TripInfo trip = attributeConverter.toAttribute(action.getMoreDetails().get("trip"), TripInfo.class);
 		
 		trip.setTripId(action.getElementId());
@@ -145,13 +156,16 @@ public class ClientActions {
 					+ "&order_by=-score" 
 					+ "&count=%d"
 					+ "&fields=name,coordinates,intro,snippet,images,properties,score",
-					trip.getStartLocation(), trip.getEndLocation(), category, numOfEvents);
+					trip.getStartLocation(), trip.getEndLocation(), categories.get(category), numOfEvents);
 
 			ResponseEntity<String> response = restTemplate.exchange(query, HttpMethod.GET, httpEntity, String.class);
 			JSONObject events = new JSONObject(response.getBody());
 			JSONArray results = events.getJSONArray("results");
 			for (int i = 0; i < results.length(); i++) {
-				allEvents.add(jsonConverter.toEventInfo(results.getJSONObject(i), category));
+				EventInfo newEvent = jsonConverter.toEventInfo(results.getJSONObject(i), category);
+				if(findEventIndex(allEvents, newEvent) == -1) {
+					allEvents.add(newEvent);
+				}
 			}
 		}
 		
@@ -195,5 +209,15 @@ public class ClientActions {
 
 		return days;
 	}
+	
+	// Function that finds the events index of specific event in the events array.
+		private static int findEventIndex(ArrayList<EventInfo> allEvents, EventInfo event) {
+			for (int i = 0; i < allEvents.size(); i++) {
+				if (allEvents.get(i).getName().equals(event.getName())) {
+					return i;
+				}
+			}
+			return -1;
+		}
 
 }
