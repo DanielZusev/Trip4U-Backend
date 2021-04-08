@@ -107,7 +107,7 @@ public class AdminTests {
 	}
 
 	@Test
-	public void testDeleteAllUsersAfterDatabaseIsInitializedWith5Users() {
+	public void testDeleteAllUsersAfterDatabaseIsInitializedWith5Users() { //TODO line 125
 		// GIVEN the database contains 4 users
 		// POST /users
 		List<UserBoundary> databaseContent = IntStream.range(1, 5).mapToObj(i -> "User" + i)
