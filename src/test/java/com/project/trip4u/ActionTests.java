@@ -294,7 +294,7 @@ public class ActionTests {
 		Map<String, Object> tripInfo = (Map<String, Object>) retrivedAction.get("trip");
 		
 		ActionBoundary action2 = new ActionBoundary(null, ActionType.DELETE, tripInfo.get("tripId").toString(), null, this.touristEmail, moreDetails);
-		;
+		
 		// THEN the server returns status 5xx
 		// AND throws exception
 		assertThrows(Exception.class, () -> this.restTemplate.postForObject("http://localhost:" + this.port + "/actions", action2, HashMap.class));
