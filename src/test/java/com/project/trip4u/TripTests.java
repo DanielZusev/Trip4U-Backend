@@ -250,4 +250,49 @@ public class TripTests {
 			assertThat(day.length() <= 2); // 2 = CALM
 		}	
 	}
+	
+	@Test
+	public void testPostTripAndRetriveItFromDBWithDifferentEmail() {
+		// GIVEN the server is up
+		// POST /actions
+		String[] categories = { "culture", "hiking" };
+		Map<String, Object> trip = new HashMap<String, Object>() {
+			{
+				put("startDate", "12/17/2020");
+				put("endDate", "12/19/2020");
+				put("categories", categories);
+				put("dayLoad", "CALM");
+				put("startLocation", "53.471557,-2.247717");
+				put("endLocation", "53.371833,-1.466437");
+			}
+		};
+		Map<String, Object> moreDetails = new HashMap<String, Object>() {
+			{
+				put("trip", trip);
+			}
+		};
+		ActionBoundary action = new ActionBoundary(null, ActionType.GENERATE, null, null, this.adminEmail, moreDetails);
+		Map<String, Object> retrivedAction = this.restTemplate.postForObject("http://localhost:" + this.port + "/actions", action, HashMap.class);
+		Map<String, Object> tripInfo = (Map<String, Object>) retrivedAction.get("trip");
+		
+				
+		assertThrows(Exception.class, () -> this.restTemplate.getForObject(url + "/{userEmail}/{tripId}", TripInfo.class, "Dan@gmail.com", tripInfo.get("tripId").toString()));
+	}
+	
+	@Test
+	public void testRetriveTripFromDBThatNotExist() {
+		String tripId = "ImNotExist";
+				
+		assertThrows(Exception.class, () -> this.restTemplate.getForObject(url + "/{userEmail}/{tripId}", TripInfo.class, this.adminEmail , tripId));
+	}
+	
+	@Test
+	public void testGetAllTripsWithoutDatabaseIsInitialized() {
+		
+		String url = this.url + "/{userEmail}";
+		TripInfo[] trips = this.restTemplate.getForObject(url, TripInfo[].class, this.touristEmail);
+
+		assertThat(trips).hasSize(0);
+	}
+
 }

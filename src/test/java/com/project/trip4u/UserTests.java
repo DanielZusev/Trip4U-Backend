@@ -1,6 +1,7 @@
 package com.project.trip4u;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import javax.annotation.PostConstruct;
@@ -158,6 +159,29 @@ public class UserTests {
 		assertThrows(Exception.class, () -> this.restTemplate.postForObject(this.url, input2, UserBoundary.class));
 	}
 	
+	@Test
+	public void testUserLoginWithNonExistingEmailInDB() {
+		String email = "dan@gmail.com";
+		String pass = "123123";
+			
+		assertThrows(Exception.class, () -> this.restTemplate.getForObject(this.url + "/login/" + email + "/" + pass, UserBoundary.class));
+	}
 	
+	@Test
+	public void testUserSignUpWithInvalidRole() {
+		// GIVEN the server is up AND database is empty
+		// WHEN I POST /users and send a new user boundary with invalid role 
+		NewUserBoundary input = new NewUserBoundary("TRIP4U", new UserName("First", "Last"), "test@gmail.com", "123456");
+		// THEN the sever return status 5xx
+		// AND throws exception
+		assertThrows(Exception.class, () -> this.restTemplate.postForObject(this.url, input, UserBoundary.class));
+	}
 	
+	@Test
+	public void testUserSignUpAndCheckThatPasswordEncrypted() throws Exception {
+		NewUserBoundary input = new NewUserBoundary("TOURIST", new UserName("First", "Last"), "test@gmail.com", "123456");
+		UserBoundary output = this.restTemplate.postForObject(this.url, input, UserBoundary.class);
+	
+		assertNotEquals("123456", output.getPassword());
+	}
 }

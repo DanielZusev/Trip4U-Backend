@@ -445,5 +445,4 @@ public class AdminTests {
 		// AND throws exception
 		assertThrows(Exception.class, () -> this.restTemplate.getForObject(url, TripInfo[].class, input.getEmail()));
 	}
-
 }
